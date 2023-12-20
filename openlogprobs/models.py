@@ -133,3 +133,46 @@ class OpenAIModel(Model):
             raise NotImplementedError(f"Tried to get topk logprobs for: {model}")
         topk_dict = response.choices[0].logprobs.top_logprobs[0]
         return {enc.encode(x)[0]: y for x, y in topk_dict.items()}
+
+
+import numpy as np
+from scipy.special import softmax, logsumexp
+
+class ToyModel(Model):
+    def __init__(self, vocab_size: int, temperature: float = 1.0):
+        super().__init__()
+        self.vocab_size = vocab_size
+        self.temperature = temperature
+        # Initialize random logits
+        self.logits = np.random.randn(vocab_size) / temperature
+
+    @property
+    def vocab_size(self) -> int:
+        return self._vocab_size
+
+    @vocab_size.setter
+    def vocab_size(self, value: int):
+        self._vocab_size = value
+
+    def argmax(self, prefix: str, logit_bias: Dict[int, float] = {}) -> int:
+        # Apply logit bias if provided
+        adjusted_logits = self.logits.copy()
+        for idx, bias in logit_bias.items():
+            adjusted_logits[idx] += bias
+
+        # Return index of maximum logit
+        return np.argmax(adjusted_logits)
+
+    def topk(self, prefix: str, logit_bias: Dict[int, float] = {}) -> Dict[int, float]:
+        # Apply logit bias if provided
+        adjusted_logits = self.logits.copy()
+        for idx, bias in logit_bias.items():
+            adjusted_logits[idx] += bias
+
+        # Calculate softmax probabilities
+        probs = softmax(adjusted_logits)
+        top_k_indices = np.argsort(-probs)[:5]  # Get top 5 indices
+
+        # Return a dictionary of top k indices and their probabilities
+        return {idx: probs[idx] for idx in top_k_indices}
+

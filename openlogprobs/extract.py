@@ -46,6 +46,7 @@ def bisection_search(
         mid = (high + low) / 2
         num_calls += k
     return -mid, num_calls
+    
 
 
 def topk_search(model: Model, prefix: str, idx: int, k=1, high=40):

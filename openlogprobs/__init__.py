@@ -1,2 +1,2 @@
 from .extract import extract_logprobs
-from .models import OpenAIModel
+from .models import OpenAIModel, ToyModel

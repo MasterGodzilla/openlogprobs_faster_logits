@@ -101,7 +101,7 @@ def extract_logprobs(
 
     def worker(x, output):
         search_kwargs = dict(bias=bias) if method == "exact" else dict(k=k)
-        logprob, num_calls = search(model, prefix=prefix, idx=x, **search_kwargs)
+        logprob, num_calls = search(model, prefix=prefix, idx=x, eps=eps, high=bias,**search_kwargs)
         output.add(num_calls, x, logprob)
 
     if multithread:
@@ -115,3 +115,8 @@ def extract_logprobs(
             worker(x, output)
 
     return output.logits - logsumexp(output.logits), output.total_calls
+
+
+
+
+
